@@ -1,0 +1,204 @@
+---
+title: "Shiny training- intro"
+author: "Chris Beeley"
+date: "November 2020"
+output: 
+  ioslides_presentation:
+    css: temp.css
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+```
+
+## Sessions
+
+* Three sessions of two hours
+* Multi speed to cater for different skill levels
+* Feel free to do some or all of the syllabus in each session
+* I'll try to stay on after each session if you need any more help
+
+## Session one
+
+* What is Shiny?
+* What does it do?
+* Intro to reactivity
+* *Application 1- minimal*
+* Your first application
+* *Application 2- Sitrep*
+* Build a real application
+* Reactive expressions
+* Optional
+    * NSE in Shiny applications
+    * Bookmarks
+
+## What is Shiny?
+
+* Shiny is a web application programming framework
+* It's a big sack of HTML, JavaScript, and CSS, all called from R, basically
+* It requires no knowledge of HTML, JavaScript, or CSS, but if you have that knowledge it will do more
+
+## What does Shiny do?
+
+* It does this
+
+```{r, echo = FALSE}
+
+shinyAppDir(paste0(system.file(package = "shiny"), "/examples/01_hello/"))
+
+```
+
+## But it also does this
+
+```{r, out.width = "1000px", echo = FALSE}
+
+knitr::include_graphics("figures/monte_carlo.png")
+
+```
+
+## And this
+
+```{r, out.width = "900px", echo = FALSE}
+
+knitr::include_graphics("figures/geoexplorer.png")
+
+```
+
+## How does Shiny work?
+
+* Reactive programming
+* When the inputs change, the outputs change
+* Outputs *take a dependency on* inputs
+* The Bad Old Days
+* What you lose
+* E.g. CRUD is hard
+* You can control reactive dependencies
+
+## One file, two file Shiny applications
+
+* Back in the day Shiny apps were two files
+* I'm going to teach you single file
+* I don't love single file but that's the way the wind is blowing
+* Either server.R and ui.R (defining server and UI)
+* Or app.R with separate bits for server and UI
+* UI- user interfacce
+* Server- the guts. Graphs, data munging, etc.
+
+## The fundamentals
+
+* The fundamentals of Shiny apps are very simple
+* You define a bunch of inputs using functions like textInput() and numericInput() in the UI
+* Each input has a name
+* You lay out your outputs in the UI using functions like textOutput() and plotOutput()
+* Each output has a name
+* Using the names you just defined in the UI, you define a bunch of outputs in the server using functions like renderPlot() and renderText()
+* Within the server you can access the value of inputs using input$nameOfInput
+* It makes a lot of sense if you just browse the code, which we will do now
+
+## Let's make an app!
+
+* File... 
+* New... 
+* Shiny web app... 
+* Application name... 
+* Single... 
+* Choose directory
+
+## We'll add a title to get warmed up
+
+* Inputs are defined like this 
+
+```{r, eval=FALSE}
+
+textInput("nameOfInput", "Label for input")
+
+```
+
+* See ?textInput for more
+* Add textInput(...) to the UI definition. In sidebarPanel()
+* Inputs are referred to like this 
+
+```{r, eval=FALSE}
+
+input$nameOfInput
+
+```
+
+* And then add main = input$nameOfInput to the hist(...)
+
+## The answer
+
+UI
+
+```{r, eval = FALSE}
+
+sidebarPanel(
+  sliderInput("bins",
+              "Number of bins:",
+              min = 1,
+              max = 50,
+              value = 30),
+  textInput("titleInput", "Add a title")
+),
+
+```
+
+Server
+
+```{r, eval = FALSE}
+
+hist(x, breaks = bins, col = 'darkgray', 
+     border = 'white', main = input$titleInput)
+
+```
+
+## Now let's make an application from scratch!
+
+* Demo **sitrep**
+
+## Some code for you to use
+
+```{r, eval = FALSE}
+
+# at the top of the code file
+
+library(tidyverse)
+library(lubridate)
+library(DT)
+
+load("ShinyContactData.rda")
+
+# UI
+
+selectInput()
+
+# server side
+
+output$table <- renderDT({
+  
+  ShinyContactData %>% 
+    filter(Year %in% input$year,
+           Status %in% input$status) %>%
+    group_by(Month, Group1) %>% 
+    summarise(count = n()) %>% 
+    ungroup() %>% 
+    spread(., Group1, count)
+})
+
+```
+
+## Debugging
+
+* Start simple
+* Make sure your code works outside of Shiny!
+* Use of cat()
+* Breakpoints and browser()
+* Run options(shiny.reactlog=TRUE)
+* Run
+* Press Ctrl+F3 for an interactive summary of reactive activity in your application
+* This has saved me more than once
