@@ -1,0 +1,165 @@
+---
+title: "Shiny training- session 2"
+author: "Chris Beeley"
+date: "November 2020"
+output: 
+  ioslides_presentation:
+    css: temp.css
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+
+library(DiagrammeR)
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+```
+
+## Recap
+
+* Application setup
+* Reactivity
+
+## Reactive expressions
+
+- Reactive expressions are expressions that change when their inputs change
+- They enable you to maintain the data fetch/ clean code for several outputs in one place
+- Crucially, they *cache* their results, which means that it's run once, for all the outputs, and only changes if its inputs change
+- Great for computationally intensive or bandwidth heavy data functions
+
+## Standard Shiny
+
+```{r, echo = FALSE, warning = FALSE}
+
+node_df <- create_node_df(n = 5 ,
+                          label = c("Input 1", "Input 2", "Output 1", 
+                                    "Output 2", "Output 3"),
+                          fontsize = 24,
+                          fillcolor = c("green", "green", "red", "red", "red"),
+                          fontcolor = "black")
+
+edge_df <- data.frame("from" = c(1, 1, 2, 2),
+                      "to" = c(3, 4, 4, 5))
+
+i_graph_1 <-
+  create_graph()
+
+i_graph_2 <-
+  i_graph_1 %>%
+  add_nodes_from_table(
+    table = node_df,
+    label_col = label)
+
+i_graph_3 <-
+  i_graph_2 %>%
+  add_edges_from_table(
+    table = edge_df,
+    from_col = from,
+    to_col = to,
+    from_to_map = id_external)
+
+i_graph_3 %>% render_graph()
+
+```
+
+## With reactive object
+
+```{r, echo = FALSE, warning = FALSE}
+
+node_dfR <- create_node_df(n = 6,
+                           label = c("Input 1", "Input 2", "Reactive object", "Output 1", 
+                                     "Output 2", "Output 3"),
+                           fontsize = 24,
+                           fillcolor = c("green", "green", "blue", "red", "red", "red"),
+                           fontcolor = "black")
+
+edge_dfR <- data.frame("from" = c(1, 2, 3, 3, 3),
+                       "to" = c(3, 3, 4, 5, 6))
+
+i_graph_1 <-
+  create_graph()
+
+i_graph_2 <-
+  i_graph_1 %>%
+  add_nodes_from_table(
+    table = node_dfR,
+    label_col = label)
+
+i_graph_3 <-
+  i_graph_2 %>%
+  add_edges_from_table(
+    table = edge_dfR,
+    from_col = from,
+    to_col = to,
+    from_to_map = id_external)
+
+i_graph_3 %>% render_graph()
+
+```
+
+## Add reactive expression
+
+* sitrep_second.R contains all server code
+* sitrep_second folder contains the answer
+
+## Debugging
+
+* Start simple
+* Make sure your code works outside of Shiny!
+* Use of cat()
+* Breakpoints and browser()
+* Run options(shiny.reactlog = TRUE)
+    * Run
+    * Press Ctrl+F3 for an interactive summary of reactive activity in your application
+    * This has saved me more than once
+
+## Tabset panels
+
+* Tabset panels are useful if you want multiple outputs but not all on the same page
+* If you give them an id you can test for which is selected too which is very useful.
+
+```{r, eval = FALSE}
+
+mainPanel(
+  tabsetPanel(id = "tabset",
+              tabPanel("Label", outputFunction("nameOfOutput")),
+              tabPanel("Label2", outputFunction2("nameOfOutput2"))
+  )
+)
+
+```
+
+## Add tab panel
+
+* We'll add a tab panel to the application
+* Keep the previous one so you have both versions
+* What happens when you deselect a status or year?
+* Now we're going to fix this
+
+## Validating state of application
+
+* Shiny has two ways of avoiding these
+* req()
+* req() will refrain from running a block of code until whatever is inside it takes a valid value
+* validate() will also refrain from running a block of code but will also write a nice error message
+
+```{r eval = FALSE}
+
+# req()
+
+req(input$trust) # this will not run until input$trust has a value
+
+# validate()
+
+validate(
+  need(input$trust, "Please select a trust"),
+  need(input$somethingElse "Please select a value for this input too")
+)
+
+```
+
+## Add req/ validate to the application
+
+* Again keep the previous application so you have a copy
