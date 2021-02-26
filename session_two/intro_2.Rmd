@@ -1,7 +1,7 @@
 ---
-title: "Shiny training- session 2"
+title: "Shiny training intro- session 2"
 author: "Chris Beeley"
-date: "November 2020"
+date: "February 2021"
 output: 
   ioslides_presentation:
     css: temp.css
@@ -135,31 +135,3 @@ mainPanel(
 
 * We'll add a tab panel to the application
 * Keep the previous one so you have both versions
-* What happens when you deselect a status or year?
-* Now we're going to fix this
-
-## Validating state of application
-
-* Shiny has two ways of avoiding these
-* req()
-* req() will refrain from running a block of code until whatever is inside it takes a valid value
-* validate() will also refrain from running a block of code but will also write a nice error message
-
-```{r eval = FALSE}
-
-# req()
-
-req(input$trust) # this will not run until input$trust has a value
-
-# validate()
-
-validate(
-  need(input$trust, "Please select a trust"),
-  need(input$somethingElse "Please select a value for this input too")
-)
-
-```
-
-## Add req/ validate to the application
-
-* Again keep the previous application so you have a copy

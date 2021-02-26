@@ -1,0 +1,139 @@
+---
+title: "Shiny training intro- session 3"
+author: "Chris Beeley"
+date: "February 2021"
+output: 
+  ioslides_presentation:
+    css: temp.css
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+```
+
+## Recap
+
+* Reactive expressions
+* Tab panels
+
+## Dynamic UI
+
+* Sometimes you need your UI to react to the state of your application
+* You can run `unique(ShinyContactData$Year)` in the UI definition
+* But you can't access reactive values
+    * e.g. `unique(returnData()$Year)`
+
+## Example
+
+<iframe src="https://involve.nottshc.nhs.uk:8443/experience"></iframe>
+
+## Code
+
+```{r, eval = FALSE}
+
+# ui
+
+uiOutput("trustControl")
+
+# server
+
+output$trustControl <- renderUI({
+  
+  selectInput("trust",
+              "Select Trust",
+              choices = unique(ae_attendances$Name),
+              multiple = TRUE)
+})
+
+```
+
+## Exercise
+
+* We're going to access the reactive object within the UI and only display the relevant data
+* This example is a little contrived because we need more code for a real example (easily 100 lines in the example I showed)
+* Open sitrep_third in session three
+
+## Validating state of application
+
+* Shiny has two ways of avoiding these
+* req()
+* req() will refrain from running a block of code until whatever is inside it takes a valid value
+* validate() will also refrain from running a block of code but will also write a nice error message
+
+```{r eval = FALSE}
+
+# req()
+
+req(input$trust) # this will not run until input$trust has a value
+
+# validate()
+
+validate(
+  need(input$trust, "Please select a trust"),
+  need(input$somethingElse "Please select a value for this input too")
+)
+
+```
+
+## Add req/ validate to the application
+
+* Keep on the same application and make a copy if you want to keep the one you just edited
+* Run the code and see what happens when you deselect filters when the graph is visible
+* Again keep the previous application so you have a copy
+* Let's fix the error message together
+
+## The layout functions
+
+* There are LOTS of layout functions other than just sidebarLayout
+* flowLayout(), fluidRow(), navBar(), navList(), splitLayout(), verticalLayout()
+* We'll cover the fundamental one and then do others if we have time
+
+## fluidRow()
+
+```{r eval = FALSE}
+
+ui <- fluidPage(
+  fluidRow(
+    column(width = 6, 
+           wellPanel(p("This appears in one column"))
+    ),
+    column(width = 6, 
+           wellPanel(p("Then this in another column"))
+    )
+  ),
+  fluidRow(
+    column(width = 3, 
+           wellPanel(p("Then a thin column underneath the top row"))),
+    column(width = 9, 
+           wellPanel(p("Then a wide column next to that one")))
+  )
+)
+server <- function(input, output) {}
+shinyApp(ui = ui, server = server)
+
+```
+
+## Example
+
+```{r}
+
+shinyAppDir("layout_example/")
+
+```
+
+## Exercise
+
+* Keep the same application (copy it if you want to)
+* We're going to redo it with the fluidRow() and column() functions
+
+## Bonus material
+
+* Try some of the others
+* There are [loads of examples online](https://github.com/ChrisBeeley/Web-Application-Development-with-R-Using-Shiny-third-edition/tree/master/Chapter04)
+* You can have a go now if there's time or in your own time another time
+* Please fill out the evaluation (your employers want to see it 😄)
